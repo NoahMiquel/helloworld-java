@@ -12,6 +12,7 @@ env:
 
 jobs:
   build:
+    name: build an artifact
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,6 +33,32 @@ jobs:
           
       - name: build an artifacts
         run: mvn clean package -DskipTests
+        env: 
+          MAVEN_OPTS: "-Dmaven.repo.local=${{ github.workspace }}/.m2/repository"
+          
+  test:
+    name: Test the code
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4.5.0
+        with: 
+          java-version: 17
+          distribution: temurin
+
+      - name: Cache
+        uses: actions/cache@v4.1.2
+        with:
+          path: ${{ github.workspace }}/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml')}}
+          
+          
+      - name: Test with maven
+        run: mvn test
         env: 
           MAVEN_OPTS: "-Dmaven.repo.local=${{ github.workspace }}/.m2/repository"
    
